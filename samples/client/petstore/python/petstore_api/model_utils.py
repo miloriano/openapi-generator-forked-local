@@ -531,6 +531,9 @@ class ModelNormal(OpenApiModel):
         if name in self.required_properties:
             return name in self.__dict__
 
+        if '_data_store' not in self.__dict__:
+            return False
+
         return name in self.__dict__['_data_store']
 
     def to_dict(self):
