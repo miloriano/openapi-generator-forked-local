@@ -40,9 +40,12 @@ import static org.openapitools.codegen.utils.StringUtils.underscore;
 public abstract class AbstractPythonCodegen extends DefaultCodegen implements CodegenConfig {
     private final Logger LOGGER = LoggerFactory.getLogger(AbstractPythonCodegen.class);
 
+    public static final String VARIABLE_NAMING_CONVENTION = "variableNamingConvention";
+
     protected String packageName = "openapi_client";
     protected String packageVersion = "1.0.0";
     protected String projectName; // for setup.py, e.g. petstore-api
+    protected String variableNamingConvention = "snake_case";
 
     public AbstractPythonCodegen() {
         super();
@@ -100,6 +103,9 @@ public abstract class AbstractPythonCodegen extends DefaultCodegen implements Co
         typeMapping.put("UUID", "str");
         typeMapping.put("URI", "str");
         typeMapping.put("null", "none_type");
+
+        cliOptions.add(new CliOption(VARIABLE_NAMING_CONVENTION, "naming convention of variable name, e.g. camelCase.")
+                .defaultValue("snake_case"));        
     }
 
     @Override
@@ -110,6 +116,10 @@ public abstract class AbstractPythonCodegen extends DefaultCodegen implements Co
             LOGGER.info("Environment variable PYTHON_POST_PROCESS_FILE not defined so the Python code may not be properly formatted. To define it, try 'export PYTHON_POST_PROCESS_FILE=\"/usr/local/bin/yapf -i\"' (Linux/Mac)");
             LOGGER.info("NOTE: To enable file post-processing, 'enablePostProcessFile' must be set to `true` (--enable-post-process-file for CLI).");
         }
+
+        if (additionalProperties.containsKey(VARIABLE_NAMING_CONVENTION)) {
+            this.setParameterNamingConvention((String) additionalProperties.get(VARIABLE_NAMING_CONVENTION));
+        }        
     }
 
     @Override
@@ -179,11 +189,20 @@ public abstract class AbstractPythonCodegen extends DefaultCodegen implements Co
         return null;
     }
 
-
+    public void setParameterNamingConvention(String variableNamingConvention) {
+        this.variableNamingConvention = variableNamingConvention;
+    }
+    
     @Override
     public String toVarName(String name) {
         // sanitize name
         name = sanitizeName(name); // FIXME: a parameter should not be assigned. Also declare the methods parameters as 'final'.
+
+        if ("original".equals(variableNamingConvention)) {
+            // return the name in camelCase style
+            // phone_number => phoneNumber
+            return name;
+        }
 
         // remove dollar sign
         name = name.replaceAll("$", "");
