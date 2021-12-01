@@ -1,0 +1,12 @@
+test:
+  get:
+    responses:
+      '200':
+        description: test
+        content:
+          application/json:
+            schema:
+              type: string
+              properties:
+                prop1:
+                  type: array
