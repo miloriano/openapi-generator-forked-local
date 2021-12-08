@@ -20,8 +20,8 @@
 
         raise ApiAttributeError(
             "{0} has no attribute '{1}'".format(
-                type(self).__name__, name),
-            [e for e in [self._path_to_item, name] if e]
+                type(self).__name__, name)#,
+            #[e for e in [self._path_to_item, name] if e]
         )
 
     def __contains__(self, name):
@@ -29,4 +29,7 @@
         if name in self.required_properties:
             return name in self.__dict__
 
+        if '_data_store' not in self.__dict__:
+            return False
+            
         return name in self.__dict__['_data_store']
